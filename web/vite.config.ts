@@ -34,9 +34,9 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: "APPNAME",
-        short_name: "APPNAME",
-        description: "APPNAME — free forever",
+        name: "SLICEit",
+        short_name: "SLICEit",
+        description: "SLICEit — free forever",
         start_url: "/",
         display: "standalone",
         background_color: "#ffffff",
