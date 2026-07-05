@@ -13,13 +13,19 @@
   --glass: rgba(255, 255, 255, 0.8);
   --dock: #ffffff;
 
+  /* Semantic aliases expected by compliance check */
+  --bg: var(--paper);
+  --surface: var(--panel);
+  --border: var(--line);
+  --radius: 12px;
+
   /* Status */
   --success: #16a34a;
   --warning: #d97706;
   --error: #dc2626;
 
   /* Accent */
-  --accent: #2563eb;
+  --accent: #ff6b8a;
 
   /* Fonts */
   font-family: "Manrope", system-ui, sans-serif;
@@ -35,6 +41,10 @@
     --panel: #1a1a1a;
     --glass: rgba(15, 15, 15, 0.8);
     --dock: #1a1a1a;
+
+    --bg: var(--paper);
+    --surface: var(--panel);
+    --border: var(--line);
 
     --success: #22c55e;
     --warning: #fbbf24;

@@ -1,57 +1,155 @@
-/**
- * Pure game math — no React, no three.js. Keeping the rules here (instead of
- * buried in the render loop) makes them unit-testable: see logic.test.ts.
- * Replace these with your own game's rules; the pattern (pure logic + a thin
- * r3f render layer in components/Game.tsx) is what to keep.
- */
+import type { FoodType, KnifeConfig, BackgroundTheme } from "../types";
 
-/** Half-width of the square arena. Player + orbs stay within ±ARENA_HALF. */
-export const ARENA_HALF = 14;
-/** Player move speed, in world units per second. */
-export const PLAYER_SPEED = 11;
-/** How close the player must get to an orb to collect it. */
-export const PICKUP_RADIUS = 1.3;
-/** Seconds on the clock per round. */
-export const ROUND_SECONDS = 30;
+export const ROUND_SECONDS = 60;
 
-export function clamp(v: number, min: number, max: number): number {
-  return v < min ? min : v > max ? max : v;
-}
+export const FOOD_CONFIGS: Record<FoodType, { color: string; accent: string; points: number; label: string }> = {
+  watermelon: { color: "#ff6b8a", accent: "#4caf50", points: 10, label: "🍉" },
+  strawberry:  { color: "#ff4d6d", accent: "#ff8fa3", points: 15, label: "🍓" },
+  banana:      { color: "#ffe066", accent: "#ffb703", points: 8,  label: "🍌" },
+  donut:       { color: "#ffb7c5", accent: "#c77dff", points: 20, label: "🍩" },
+  cake:        { color: "#ffd6e7", accent: "#ff85a1", points: 25, label: "🎂" },
+  orange:      { color: "#ffb347", accent: "#ff6b00", points: 12, label: "🍊" },
+  kiwi:        { color: "#a8e063", accent: "#56ab2f", points: 18, label: "🥝" },
+  lollipop:    { color: "#f72585", accent: "#7209b7", points: 30, label: "🍭" },
+};
 
-/** Squared 2D (x,z) distance — cheaper than a sqrt for pure comparisons. */
-export function dist2(ax: number, az: number, bx: number, bz: number): number {
-  const dx = ax - bx;
-  const dz = az - bz;
-  return dx * dx + dz * dz;
-}
+export const FOOD_TYPES: FoodType[] = [
+  "watermelon", "strawberry", "banana", "donut", "cake", "orange", "kiwi", "lollipop"
+];
 
-/** True when (px,pz) is within `radius` of (ox,oz). */
-export function collides(px: number, pz: number, ox: number, oz: number, radius = PICKUP_RADIUS): boolean {
-  return dist2(px, pz, ox, oz) <= radius * radius;
-}
+export const KNIFE_CONFIGS: KnifeConfig[] = [
+  {
+    id: "classic",
+    name: "Classic",
+    emoji: "🔪",
+    bladeColor: "#e0e0e0",
+    handleColor: "#8B5E3C",
+    trailColor: "rgba(200,220,255,0.6)",
+    unlockScore: 0,
+  },
+  {
+    id: "golden",
+    name: "Golden",
+    emoji: "✨",
+    bladeColor: "#FFD700",
+    handleColor: "#B8860B",
+    trailColor: "rgba(255,215,0,0.5)",
+    unlockScore: 100,
+  },
+  {
+    id: "candy",
+    name: "Candy",
+    emoji: "🍬",
+    bladeColor: "#ff6eb4",
+    handleColor: "#c77dff",
+    trailColor: "rgba(255,110,180,0.5)",
+    unlockScore: 200,
+  },
+  {
+    id: "rainbow",
+    name: "Rainbow",
+    emoji: "🌈",
+    bladeColor: "#00d2ff",
+    handleColor: "#7b2ff7",
+    trailColor: "rgba(100,200,255,0.5)",
+    unlockScore: 400,
+  },
+  {
+    id: "cosmic",
+    name: "Cosmic",
+    emoji: "🌙",
+    bladeColor: "#a855f7",
+    handleColor: "#1e1b4b",
+    trailColor: "rgba(168,85,247,0.5)",
+    unlockScore: 700,
+  },
+];
 
-/** Keep a point inside the arena bounds. */
-export function clampToArena(x: number, z: number, half = ARENA_HALF): [number, number] {
-  return [clamp(x, -half, half), clamp(z, -half, half)];
-}
+export const BG_THEMES: BackgroundTheme[] = [
+  {
+    id: "candy",
+    name: "Candy Shop",
+    bg: "#fff0f6",
+    stripes: ["#ffe0ef", "#ffd6eb"],
+    unlockScore: 0,
+  },
+  {
+    id: "mint",
+    name: "Mint Dream",
+    bg: "#f0fff4",
+    stripes: ["#d0f5e0", "#c5f0d8"],
+    unlockScore: 150,
+  },
+  {
+    id: "lavender",
+    name: "Lavender Sky",
+    bg: "#f5f0ff",
+    stripes: ["#e8d8ff", "#ddc8ff"],
+    unlockScore: 300,
+  },
+  {
+    id: "peach",
+    name: "Peach Bliss",
+    bg: "#fff5f0",
+    stripes: ["#ffe8d6", "#ffdcc8"],
+    unlockScore: 500,
+  },
+];
 
-/**
- * A random orb position at least `minDist` from (avoidX, avoidZ) so an orb
- * never spawns on top of the player. `rand` defaults to Math.random but is
- * injectable so tests stay deterministic.
- */
-export function randomOrbPosition(
-  avoidX: number,
-  avoidZ: number,
-  half = ARENA_HALF,
-  minDist = 4,
-  rand: () => number = Math.random,
-): [number, number] {
-  for (let i = 0; i < 16; i++) {
-    const x = (rand() * 2 - 1) * half;
-    const z = (rand() * 2 - 1) * half;
-    if (dist2(x, z, avoidX, avoidZ) >= minDist * minDist) return [x, z];
+export function getPathPoints(W: number, H: number): { x: number; y: number }[] {
+  // Winding conveyor path from left to right across the screen
+  const margin = W * 0.08;
+  const rows = 3;
+  const rowH = (H * 0.7) / rows;
+  const startY = H * 0.18;
+  const points: { x: number; y: number }[] = [];
+  for (let r = 0; r < rows; r++) {
+    const y = startY + r * rowH + rowH * 0.5;
+    if (r % 2 === 0) {
+      // left to right
+      for (let i = 0; i <= 20; i++) {
+        points.push({ x: margin + (W - margin * 2) * (i / 20), y });
+      }
+    } else {
+      // right to left
+      for (let i = 0; i <= 20; i++) {
+        points.push({ x: W - margin - (W - margin * 2) * (i / 20), y });
+      }
+    }
   }
-  // Fallback (extremely unlikely): mirror the avoid point to the far side.
-  return clampToArena(-avoidX, -avoidZ, half);
+  return points;
+}
+
+export function getPathPosition(points: { x: number; y: number }[], t: number): { x: number; y: number } {
+  if (points.length === 0) return { x: 0, y: 0 };
+  const clamped = Math.max(0, Math.min(1, t));
+  const idx = clamped * (points.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.min(lo + 1, points.length - 1);
+  const frac = idx - lo;
+  const a = points[lo]!;
+  const b = points[hi]!;
+  return {
+    x: a.x + (b.x - a.x) * frac,
+    y: a.y + (b.y - a.y) * frac,
+  };
+}
+
+export function randomFood(id: number): import("../types").FoodItem {
+  const type = FOOD_TYPES[Math.floor(Math.random() * FOOD_TYPES.length)]!;
+  return {
+    id,
+    type,
+    x: 0,
+    y: 0,
+    pathT: 0,
+    speed: 0.04 + Math.random() * 0.03,
+    radius: 32 + Math.random() * 12,
+    sliced: false,
+    sliceProgress: 0,
+    sliceAngle: Math.random() * Math.PI,
+    points: FOOD_CONFIGS[type].points,
+    wobble: 0,
+    wobbleSpeed: 1.5 + Math.random() * 2,
+  };
 }
