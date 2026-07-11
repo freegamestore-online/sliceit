@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { GameShell, GameTopbar } from "@freegamestore/games";
-import Menu from "./components/Menu";
-import LevelSelect from "./components/LevelSelect";
-import Game from "./components/Game";
-import HUD from "./components/HUD";
-import KnifeShop from "./components/KnifeShop";
+import { Menu } from "./components/Menu";
+import { LevelSelect } from "./components/LevelSelect";
+import { Game } from "./components/Game";
+import { HUD } from "./components/HUD";
+import { KnifeShop } from "./components/KnifeShop";
 import { useHighScore } from "./hooks/useHighScore";
 
 export default function App() {
