@@ -1,55 +1,70 @@
-export type GamePhase = "menu" | "playing" | "over";
+export type GamePhase = "menu" | "playing" | "levelcomplete" | "shop" | "over";
 
-export type FoodType = "watermelon" | "strawberry" | "banana" | "donut" | "cake" | "orange" | "kiwi" | "lollipop";
+export type FoodType =
+  | "watermelon" | "strawberry" | "banana" | "donut"
+  | "orange"     | "kiwi"       | "lollipop" | "cake" | "bomb";
 
 export interface FoodItem {
   id: number;
   type: FoodType;
-  x: number;
-  y: number;
-  pathT: number; // 0..1 position along the conveyor path
-  speed: number;
-  radius: number;
+  /** world X — 0 = left edge of road, 1 = right edge */
+  laneX: number;
+  /** world Z — distance along road (0 = horizon, 1 = player feet) */
+  z: number;
+  /** spin angle for 3-D feel */
+  spin: number;
+  spinSpeed: number;
   sliced: boolean;
-  sliceProgress: number; // 0..1 for animation
+  sliceProgress: number; // 0→1 fade-out after slice
   sliceAngle: number;
   points: number;
-  wobble: number;
-  wobbleSpeed: number;
+  coins: number;
+  /** screen coords computed each frame from z */
+  sx: number;
+  sy: number;
+  sr: number; // screen radius
 }
 
-export interface SliceParticle {
+export interface Particle {
   id: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
+  x: number; y: number;
+  vx: number; vy: number;
   color: string;
-  radius: number;
-  life: number;
-  maxLife: number;
-  type: "juice" | "chunk";
+  r: number;
+  life: number; maxLife: number;
 }
 
-export interface KnifeConfig {
+export interface ScorePopup {
+  id: number;
+  x: number; y: number;
+  text: string;
+  color: string;
+  life: number; maxLife: number;
+}
+
+export interface KnifeSkin {
   id: string;
   name: string;
   emoji: string;
+  cost: number;
+  owned: boolean;
   bladeColor: string;
+  bladeShine: string;
   handleColor: string;
   trailColor: string;
-  unlockScore: number;
+  special: "none" | "rainbow" | "fire" | "ice" | "gold";
 }
 
-export interface BackgroundTheme {
-  id: string;
+export interface LevelDef {
+  level: number;
   name: string;
-  bg: string;
-  stripes: string[];
-  unlockScore: number;
-}
-
-export interface PathPoint {
-  x: number;
-  y: number;
+  subtitle: string;
+  toSlice: number;       // food items needed to complete
+  spawnInterval: number; // seconds
+  zSpeed: number;        // z units per second food travels toward player
+  bombChance: number;    // 0–1
+  bgTop: string;
+  bgBottom: string;
+  roadColor: string;
+  stripeColor: string;
 }
