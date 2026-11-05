@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import type { FoodItem, SliceParticle, KnifeConfig, BackgroundTheme } from "../types";
 import {
   FOOD_CONFIGS,
@@ -307,7 +307,6 @@ export function Game({ onScore, onTime, onGameOver, knife, theme }: GameProps) {
     H: 0,
   });
 
-  const [_tick, setTick] = useState(0); // force re-render only for score updates
 
   const spawnFood = useCallback(() => {
     const s = stateRef.current;

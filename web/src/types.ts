@@ -1,70 +1,55 @@
-export type GamePhase = "menu" | "playing" | "levelcomplete" | "shop" | "over";
+export type GamePhase = "menu" | "playing" | "over";
 
-export type FoodType =
-  | "watermelon" | "strawberry" | "banana" | "donut"
-  | "orange"     | "kiwi"       | "lollipop" | "cake" | "bomb";
+export type FoodType = "watermelon" | "strawberry" | "banana" | "donut" | "cake" | "orange" | "kiwi" | "lollipop";
 
 export interface FoodItem {
   id: number;
   type: FoodType;
-  /** world X — 0 = left edge of road, 1 = right edge */
-  laneX: number;
-  /** world Z — distance along road (0 = horizon, 1 = player feet) */
-  z: number;
-  /** spin angle for 3-D feel */
-  spin: number;
-  spinSpeed: number;
+  x: number;
+  y: number;
+  pathT: number; // 0..1 position along the conveyor path
+  speed: number;
+  radius: number;
   sliced: boolean;
-  sliceProgress: number; // 0→1 fade-out after slice
+  sliceProgress: number; // 0..1 for animation
   sliceAngle: number;
   points: number;
-  coins: number;
-  /** screen coords computed each frame from z */
-  sx: number;
-  sy: number;
-  sr: number; // screen radius
+  wobble: number;
+  wobbleSpeed: number;
 }
 
-export interface Particle {
+export interface SliceParticle {
   id: number;
-  x: number; y: number;
-  vx: number; vy: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
   color: string;
-  r: number;
-  life: number; maxLife: number;
+  radius: number;
+  life: number;
+  maxLife: number;
+  type: "juice" | "chunk";
 }
 
-export interface ScorePopup {
-  id: number;
-  x: number; y: number;
-  text: string;
-  color: string;
-  life: number; maxLife: number;
-}
-
-export interface KnifeSkin {
+export interface KnifeConfig {
   id: string;
   name: string;
   emoji: string;
-  cost: number;
-  owned: boolean;
   bladeColor: string;
-  bladeShine: string;
   handleColor: string;
   trailColor: string;
-  special: "none" | "rainbow" | "fire" | "ice" | "gold";
+  unlockScore: number;
 }
 
-export interface LevelDef {
-  level: number;
+export interface BackgroundTheme {
+  id: string;
   name: string;
-  subtitle: string;
-  toSlice: number;       // food items needed to complete
-  spawnInterval: number; // seconds
-  zSpeed: number;        // z units per second food travels toward player
-  bombChance: number;    // 0–1
-  bgTop: string;
-  bgBottom: string;
-  roadColor: string;
-  stripeColor: string;
+  bg: string;
+  stripes: string[];
+  unlockScore: number;
+}
+
+export interface PathPoint {
+  x: number;
+  y: number;
 }
